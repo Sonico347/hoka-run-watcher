@@ -187,6 +187,17 @@ def main() -> int:
 
     n_items = len(page["items"]) if page["items"] is not None else "?"
     print(f"HTTP {page['status']} | bloqué={page['blocked']} | runs={n_items} | liens={len(page['links'])}")
+    for item in (page["items"] or {}).values():
+        ev = item_to_event(item)
+        print(f"  - [{ev['status']}/{ev['rsvp']}] {ev['title']} — {ev['when']}")
+
+    # Sans topic ntfy, on ne mémorise rien : sinon les runs actuels seraient
+    # marqués « vus » sans que tu aies reçu la moindre notification.
+    if not NTFY_TOPIC:
+        print("ERREUR : le secret NTFY_TOPIC n'est pas configuré "
+              "(Settings → Secrets and variables → Actions). Rien n'est enregistré.",
+              file=sys.stderr)
+        return 1
 
     # 1) Accès refusé par l'anti-bot. Ça arrive par intermittence : on ne prévient
     #    qu'après BLOCKED_ALERT_AFTER échecs d'affilée (8 x 15 min = 2 h).
