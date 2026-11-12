@@ -210,6 +210,12 @@ def main() -> int:
         blocked_count += 1
         BLOCKED_FILE.write_text(str(blocked_count))
         print(f"Bloqué {blocked_count} fois d'affilée")
+        if os.environ.get("GITHUB_ACTIONS"):
+            # Avertissement jaune visible dans l'onglet Actions : le passage est
+            # « vert » mais la page n'a pas pu être lue.
+            print(f"::warning title=Site HOKA bloqué::L'anti-bot a refusé l'accès "
+                  f"(HTTP {page['status']}), {blocked_count} fois d'affilée. "
+                  "Aucun run n'a pu être vérifié à ce passage.")
         if blocked_count == BLOCKED_ALERT_AFTER:
             notify("⚠️ Surveillance HOKA bloquée",
                    f"Le site refuse l'accès depuis {BLOCKED_ALERT_AFTER} essais "
