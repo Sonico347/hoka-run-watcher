@@ -9,7 +9,7 @@ et envoie une notification sur ton iPhone via l'app **[ntfy](https://ntfy.sh)** 
 
 Toucher la notification ouvre directement la page d'inscription du run.
 
-Tout tourne gratuitement sur **GitHub Actions**, sans serveur ni ordinateur allumé.
+Deux façons de le faire tourner : **GitHub Actions** (gratuit, mais le site bloque souvent les serveurs de GitHub) ou **ton Mac / Raspberry Pi** (recommandé, voir plus bas).
 
 ## Installation (5 minutes)
 
@@ -56,21 +56,32 @@ Le script ne contourne pas cette protection : il réessaie simplement au passage
 - Après **8 échecs d'affilée (2 h)**, tu reçois une alerte « ⚠️ Surveillance HOKA bloquée »,
   puis « ✅ rétablie » quand ça repasse.
 
-Si GitHub est bloqué en permanence, lance le script depuis ton ordinateur
-(ta connexion perso est vue comme un visiteur normal) :
+Les serveurs de GitHub sont bloqués quasi systématiquement. La solution est de faire
+la vérification **depuis ta connexion internet à la maison** (Mac ou Raspberry Pi
+allumé), où le site te voit comme un visiteur normal.
+
+### Installation sur ton Mac ou un Raspberry Pi
+
+Ouvre le Terminal et colle (remplace le topic par le tien) :
 
 ```bash
-python3 -m venv .venv && . .venv/bin/activate
-pip install -r requirements.txt
-python -m playwright install chromium
-NTFY_TOPIC=ton-topic python watch.py
+git clone https://github.com/Sonico347/hoka-run-watcher.git ~/hoka-run-watcher
+cd ~/hoka-run-watcher && ./install.sh hoka-runs-xxxxxxxxxxxx
 ```
 
-Pour le lancer toutes les 15 min sur Mac/Linux, ajoute avec `crontab -e` :
+Le script installe tout dans le dossier, fait un premier passage (tu dois recevoir
+« 👟 Surveillance HOKA activée »), puis relance la vérification toutes les 15 minutes :
+via `launchd` sur Mac, via `cron` sur Raspberry Pi / Linux.
 
-```
-*/15 * * * * cd /chemin/vers/hoka-run-watcher && NTFY_TOPIC=ton-topic .venv/bin/python watch.py >> watch.log 2>&1
-```
+- Journal : `~/.hoka-run-watcher/watch.log`
+- Mettre à jour : `cd ~/hoka-run-watcher && git pull && ./install.sh hoka-runs-xxxxxxxxxxxx`
+- Arrêter : `~/hoka-run-watcher/install.sh --uninstall`
+- Sur Mac, aucune vérification n'a lieu pendant la mise en veille. Pour un Mac fixe :
+  Réglages Système → Énergie → « Empêcher la suspension d'activité automatique lorsque l'écran est éteint ».
+
+Une fois la version locale en place, désactive le workflow GitHub
+(Actions → Surveillance runs HOKA Paris → `…` → **Disable workflow**) pour ne pas recevoir
+l'alerte « bloquée » de GitHub.
 
 ## Réglages optionnels
 
